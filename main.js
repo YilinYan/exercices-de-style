@@ -9,7 +9,10 @@ function main() {
 }
 
 function initEvent() {
-
+    var clear_button = document.getElementById('clear');
+    clear_button.onmousedown = () => { renderer.clear(); }
+    var reset_button = document.getElementById('reset');
+    reset_button.onmousedown = () => { renderer = Renderer(getOpt()); }
 }
 
 function getOpt() {
@@ -29,14 +32,11 @@ function getOpt() {
     }
 
     var number_slider = document.getElementById('number');
-    number_slider.onchange = (e) => { 
-        opt.number = e.target.value; 
-        console.log(opt);
-    }
-
-    var clear_button = document.getElementById('clear');
-    clear_button.onmousedown = () => { renderer.clear(); }
+    opt.number = +number_slider.value;
     
+    var weight_slider = document.getElementById('weight');
+    opt.weight = +weight_slider.value;
+
     return opt;
 }
 

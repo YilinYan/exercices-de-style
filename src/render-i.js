@@ -13,8 +13,8 @@ var SimplexNoise = require('simplex-noise'),
 
 module.exports = function getRenderer (opt) {
     opt = opt || {};
-
-    let N = opt.number || 20;
+    var N = opt.number || 20;
+    var weight = opt.weight || 20;
     var Width = opt.width || 700;
     var Height = opt.height || 500;
     var palette = opt.palette ||
@@ -43,7 +43,7 @@ module.exports = function getRenderer (opt) {
         p.speed = random (0, 1);
         p.time = 0;
         p.duration = random(300, 500);
-        p.width = random(10, 40) * rand / 2;
+        p.width = random(weight * 0.8, weight * 1.2);
         return p;
     }
 
