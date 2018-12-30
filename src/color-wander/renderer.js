@@ -1,3 +1,5 @@
+// Reference:
+// https://github.com/mattdesl/color-wander/blob/master/lib/createRenderer.js#L11
 
 var random = (x, y) => { return Math.random() * (y-x) + x; };
 var normalize = ([x, y]) => { var len = Math.sqrt( x*x + y*y );

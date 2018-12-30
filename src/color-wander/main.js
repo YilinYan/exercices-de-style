@@ -1,4 +1,4 @@
-var Renderer = require ('./src/render-i');
+var Renderer = require ('./renderer');
 var renderer;
 window.addEventListener('load', () => { main() })
 
