@@ -5,6 +5,7 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
+/*
 var curve = createCurve();
 // MeshBasicMaterial in THREE.js is like a toon shader (
 // good for silouhette, shadow drawing or wireframe) and and is not affected by lights.
@@ -12,17 +13,46 @@ var curve = createCurve();
 var material = new THREE.MeshPhongMaterial( {color: 0xff1111} );
 var cylinder = new THREE.Mesh( curve, material );
 scene.add( cylinder );
+*/
 
 var light = new THREE.PointLight( 0xfefeee, 1, 100 );
 light.position.set( 4, 4, 0 );
 scene.add( light );
 
-var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+var light = new THREE.AmbientLight( 0x404040 );
 scene.add( light );
+
+// use the tool to make shaders
+const glslify = require('glslify');
+//const Path = require('path');
+const vShader = glslify('./curve.vert');
+const fShader = glslify('./curve.frag');
+const material = new THREE.RawShaderMaterial({
+  vertexShader: vShader,
+  fragmentShader: fShader,
+  side: THREE.FrontSide,  // what is side ?
+  extensions: {
+    deriviatives: true
+  },
+  defines: {
+    lengthSegments: 50,  // subdivs
+    FLAT_SHADED: false
+  },
+  uniforms: {
+    thickness: { type: 'f', value: 1 },
+    time: { type: 'f', value: 0 },
+    radialSegments: { type: 'f', value: 8 }
+  }
+});
+
+const createCurve = require('./createCurve.js');
+var geometry = createCurve();
+const mesh = new THREE.Mesh(geometry, material);
+mesh.frustumCulled = false;
+scene.add(geometry);
 
 function animate() {
   requestAnimationFrame( animate );
-  cylinder.rotateZ(0.01);
 	renderer.render( scene, camera );
 }
 animate();

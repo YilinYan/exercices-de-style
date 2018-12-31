@@ -1,0 +1,31 @@
+{
+  "name": "exercices-de-style",
+  "version": "1.0.0",
+  "description": "",
+  "license": "MIT",
+  "semistandard": {
+    "global": [
+      "THREE"
+    ]
+  },
+  "author": {
+    "name": "Yilin Yan",
+    "email": "yilinyan1030@gmail.com",
+    "url": "https://github.com/yilinyan"
+  },
+  "dependencies": {
+    "glsl-face-normal": "^1.0.2",
+    "glslify": "^2.0.0",
+    "simplex-noise": "^2.2.0",
+    "glslify-hex": "^2.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/YilinYan/exercices-de-style.git"
+  },
+  "glslify": {
+    "transform": [
+      "glslify-hex"
+    ]
+  }
+}

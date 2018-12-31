@@ -1,7 +1,7 @@
 // Reference:
 // https://github.com/mattdesl/parametric-curves/blob/master/lib/geom/createTubeGeometry.js#L2
 
-var createCurve = (sides = 8, subdivs = 50, openEnded = false) => {
+module.exports = (sides = 8, subdivs = 50, openEnded = false) => {
   // create a CylinderGeometry as base
   const radius = 1;
   const length = 1;
@@ -36,9 +36,6 @@ var createCurve = (sides = 8, subdivs = 50, openEnded = false) => {
 
   const angleArray = new Float32Array(angles);
   const posArray = new Float32Array(postions);
-
-  console.log(angleArray);
-  console.log(posArray);
 
   const geometry = new THREE.BufferGeometry();
   geometry.addAttribute('position', new THREE.BufferAttribute(posArray, 1));
