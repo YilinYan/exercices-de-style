@@ -23,10 +23,10 @@ var light = new THREE.AmbientLight( 0x404040 );
 scene.add( light );
 
 // use the tool to make shaders
-const glslify = require('glslify');
+const glslify = require( 'glslify' );
 //const Path = require('path');
-const vShader = glslify('./curve.vert');
-const fShader = glslify('./curve.frag');
+const vShader = glslify( './curve.vert' );
+const fShader = glslify( './curve.frag' );
 const material = new THREE.RawShaderMaterial({
   vertexShader: vShader,
   fragmentShader: fShader,
@@ -45,11 +45,11 @@ const material = new THREE.RawShaderMaterial({
   }
 });
 
-const createCurve = require('./createCurve.js');
+const createCurve = require( './createCurve.js' );
 var geometry = createCurve();
-const mesh = new THREE.Mesh(geometry, material);
+const mesh = new THREE.Mesh( geometry, material );
 mesh.frustumCulled = false;
-scene.add(geometry);
+scene.add( mesh );
 
 function animate() {
   requestAnimationFrame( animate );

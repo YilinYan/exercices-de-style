@@ -17,7 +17,8 @@
     "glsl-face-normal": "^1.0.2",
     "glslify": "^2.0.0",
     "simplex-noise": "^2.2.0",
-    "glslify-hex": "^2.1.1"
+    "glslify-hex": "^2.1.1",
+    "static-eval": ">=2.0.0"
   },
   "repository": {
     "type": "git",
