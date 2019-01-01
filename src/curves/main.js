@@ -53,6 +53,7 @@ scene.add( mesh );
 
 function animate() {
   requestAnimationFrame( animate );
-	renderer.render( scene, camera );
+  renderer.render( scene, camera );
+  mesh.material.uniforms.time.value += 0.1;
 }
 animate();
