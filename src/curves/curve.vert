@@ -12,16 +12,29 @@ uniform mat3 normalMatrix;
 uniform float thickness;
 uniform float time;
 uniform float radialSegments;
+uniform float size;
 
 // pass a few things along to the vertex shader
 varying vec2 vUv;
 varying vec3 vViewPosition;
 varying vec3 vNormal;
 
+vec3 spherical (float r, float phi, float theta) {
+  return vec3(
+    r * cos(phi) * cos(theta),
+    r * cos(phi) * sin(theta),
+    r * sin(phi)
+  );
+}
+
 vec3 sample (float t) {
-  float x = t * 2.0 - 1.0;
-  float y = sin(t + time);
-  return vec3(x, y, 0.0);
+  float beta = t * PI;
+
+  float r = sin(beta * 2.0) * 0.75;
+  float phi = sin(beta * 8.0 + time);
+  float theta = 4.0 * beta;
+
+  return spherical(r, phi, theta) * size;
 }
 
 void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
@@ -49,11 +62,15 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 
 void main() {
   float t = position + 0.5;
-  vec2 volume = vec2(thickness, thickness);
+  vec2 volume = vec2(thickness * 0.5, thickness);
   vec3 transformed;
   vec3 objNormal;
   createTube(t, volume, transformed, objNormal);
 
   vec4 mvPos = modelViewMatrix * vec4(transformed, 1.0);
+  vNormal = normalize(normalMatrix * objNormal);
+  vUv = uv.yx;
+  vViewPosition = -mvPos.xyz;
+
   gl_Position = projectionMatrix * mvPos;
 }
