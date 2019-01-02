@@ -15,8 +15,11 @@ void main () {
 
   float brightness = vNormal.y * 0.5 + 0.5;
 
-  float transparent = 1.0 - abs(sin(vPosition * PI * 30.0));
-  transparent = pow(transparent, 6.0);
+  float transparent = 1.0 - abs(sin(vPosition * PI * 10.0));
+  transparent = pow(transparent, 4.0);
+
+  float highlight = 1.0 - abs(sin(vPosition * PI * 5.0));
+  highlight = pow(highlight, 4.0);
 
   gl_FragColor = vec4(brightness * color, 1.0);
 }

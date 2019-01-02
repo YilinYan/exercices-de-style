@@ -1,6 +1,6 @@
 const scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.z = 10;
+camera.position.z = 5;
 var renderer = new THREE.WebGLRenderer({ alpha: true, depth: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
@@ -31,7 +31,7 @@ const glslify = require( 'glslify' );
 //const Path = require('path');
 const vShader = glslify( './curve.vert' );
 const fShader = glslify( './curve.frag' );
-const material = new THREE.RawShaderMaterial({
+const baseMaterial = new THREE.RawShaderMaterial({
   vertexShader: vShader,
   fragmentShader: fShader,
   side: THREE.FrontSide,  // what is side ?
@@ -44,28 +44,48 @@ const material = new THREE.RawShaderMaterial({
     PI: Math.PI
   },
   uniforms: {
-    thickness: { type: 'f', value: 0.02 },
+    thickness: { type: 'f', value: 0.05 },
     time: { type: 'f', value: 0 },
     radialSegments: { type: 'f', value: 8 },
     size: { type: 'f', value: 4.0 },
-    color: { type: 'c', value: new THREE.Color('#1010d0')}
+    color: { type: 'c', value: new THREE.Color('#3030f0') },
+    index: { type: 'f', value: 0 }
   }
 });
 
+const myRand = (a, b) => { return Math.random() * (b - a) + a; };
 const createCurve = require( './createCurve.js' );
-var geometry = createCurve( curveSides, lengthSeg );
-const mesh = new THREE.Mesh( geometry, material );
-// our geometry only contains a 1-dimensional position attribute 
-// which causes issues with ThreeJS’s built-in frustum culling.
-// https://mattdesl.svbtle.com/shaping-curves-with-parametric-equations
-mesh.frustumCulled = false;
-scene.add( mesh );
+const geometry = createCurve( curveSides, lengthSeg );
+const meshContainer = new THREE.Object3D();
+const totalMeshes = 20;
+const meshes = new Array(totalMeshes).fill(null).map((_, i) => {
+  const t = totalMeshes <= 1 ? 0 : i / (totalMeshes - 1);
+
+  const material = baseMaterial.clone();
+  material.uniforms = THREE.UniformsUtils.clone(material.uniforms);
+  material.uniforms.index.value = t;
+  material.uniforms.thickness.value = myRand(0.03, 0.04);
+
+  const mesh = new THREE.Mesh(geometry, material);
+  // our geometry only contains a 1-dimensional position attribute 
+  // which causes issues with ThreeJS’s built-in frustum culling.
+  // https://mattdesl.svbtle.com/shaping-curves-with-parametric-equations
+  mesh.frustumCulled = false;
+
+  meshContainer.add(mesh);
+  return mesh;
+});
+scene.add(meshContainer);
 
 var timeNow = Date.now();
 function animate() {
   requestAnimationFrame( animate );
   renderer.render( scene, camera );
-  mesh.material.uniforms.time.value += (Date.now() - timeNow) / 1000.0;
+//  mesh.material.uniforms.time.value += (Date.now() - timeNow) / 1000.0;
+  var dt = (Date.now() - timeNow) / 1000.0;
+  meshes.forEach((mesh) => {
+    mesh.material.uniforms.time.value += dt;
+  });
   timeNow = Date.now();
 //  mesh.material.uniforms.thickness.value = Math.sin(Date.now() / 1000.0) * 0.2 + 0.5;
 }

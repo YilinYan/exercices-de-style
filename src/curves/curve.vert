@@ -13,12 +13,15 @@ uniform float thickness;
 uniform float time;
 uniform float radialSegments;
 uniform float size;
+uniform float index;
 
 // pass a few things along to the vertex shader
 varying vec2 vUv;
 varying vec3 vViewPosition;
 varying vec3 vNormal;
 varying float vPosition;
+
+#pragma glslify: ease = require('glsl-easings/exponential-in-out');
 
 vec3 spherical (float r, float phi, float theta) {
   return vec3(
@@ -30,17 +33,42 @@ vec3 spherical (float r, float phi, float theta) {
 
 vec3 sample (float t) {
   float beta = t * PI;
-
-  float r = sin(beta * 8.0);
   
-  float phi = sin(beta * 16.0 + time) * 2.0;
+  float ripple = ease(sin(t * 2.0 * PI + time) * 0.5 + 0.5) * 0.5;
+  float noise = time + index * ripple * 8.0;
+  
+  // animate radius on click
+  float animateRadius = size;
+  float animateStrength = 1.0;
+  float radiusAnimation = animateRadius * animateStrength * 0.25;
+  float r = sin(index * 0.75 + beta * 2.0) * (0.75 + radiusAnimation);
+  float theta = 4.0 * beta + index * 0.25;
+  float phi = sin(index * 2.0 + beta * 8.0 + noise);
 
-  phi += 0.2;
-
-  float theta = 10.0 * beta;
-
-  return spherical(r, phi, theta) * size;
+  return spherical(r, phi, theta);
 }
+
+/* knot 1
+  float beta = t * PI;
+  float r = sin(beta * 4.0) + cos(beta * 2.0) * 0.2;
+  float phi = sin(beta * 16.0 + time) * 2.0;
+  float theta = 10.0 * beta;
+  return spherical(r, phi, theta) * size;
+*/
+
+/* knot 2
+// Reference:
+// http://paulbourke.net/geometry/knots/
+  float nlongitude = 11.0;
+  float nmeridian = 6.0;
+  float mu = t * PI * 2.0 * nmeridian;
+
+  float x = cos(mu) * (1.0 + cos(nlongitude*mu/nmeridian) / 2.0);
+  float y = sin(mu) * (1.0 + cos(nlongitude*mu/nmeridian) / 2.0);
+  float z = sin(nlongitude*mu/nmeridian) / 2.0;
+
+  return vec3(x, y, z) * size * 3.0;
+*/
 
 void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
   // find next sample along curve
@@ -67,7 +95,7 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 
 void main() {
   float t = position + 0.5;
-  vec2 volume = vec2(thickness, thickness * 0.5);
+  vec2 volume = vec2(thickness, thickness * 0.25);
   vec3 transformed;
   vec3 objNormal;
   createTube(t, volume, transformed, objNormal);
