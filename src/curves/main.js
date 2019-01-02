@@ -1,7 +1,7 @@
 const scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.position.z = 10;
-var renderer = new THREE.WebGLRenderer();
+var renderer = new THREE.WebGLRenderer({ alpha: true, depth: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
@@ -24,7 +24,7 @@ var light = new THREE.AmbientLight( 0x404040 );
 scene.add( light );
 */
 
-const lengthSeg = 200;
+const lengthSeg = 500;
 const curveSides = 10;
 // use the tool to make shaders
 const glslify = require( 'glslify' );
@@ -44,15 +44,16 @@ const material = new THREE.RawShaderMaterial({
     PI: Math.PI
   },
   uniforms: {
-    thickness: { type: 'f', value: 0.07 },
+    thickness: { type: 'f', value: 0.02 },
     time: { type: 'f', value: 0 },
     radialSegments: { type: 'f', value: 8 },
-    size: { type: 'f', value: 8.0 }
+    size: { type: 'f', value: 4.0 },
+    color: { type: 'c', value: new THREE.Color('#1010d0')}
   }
 });
 
 const createCurve = require( './createCurve.js' );
-var geometry = createCurve(curveSides, lengthSeg);
+var geometry = createCurve( curveSides, lengthSeg );
 const mesh = new THREE.Mesh( geometry, material );
 // our geometry only contains a 1-dimensional position attribute 
 // which causes issues with ThreeJS’s built-in frustum culling.
@@ -60,10 +61,12 @@ const mesh = new THREE.Mesh( geometry, material );
 mesh.frustumCulled = false;
 scene.add( mesh );
 
+var timeNow = Date.now();
 function animate() {
   requestAnimationFrame( animate );
   renderer.render( scene, camera );
-  mesh.material.uniforms.time.value += 0.01;
+  mesh.material.uniforms.time.value += (Date.now() - timeNow) / 1000.0;
+  timeNow = Date.now();
 //  mesh.material.uniforms.thickness.value = Math.sin(Date.now() / 1000.0) * 0.2 + 0.5;
 }
 animate();

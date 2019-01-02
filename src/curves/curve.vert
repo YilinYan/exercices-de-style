@@ -18,6 +18,7 @@ uniform float size;
 varying vec2 vUv;
 varying vec3 vViewPosition;
 varying vec3 vNormal;
+varying float vPosition;
 
 vec3 spherical (float r, float phi, float theta) {
   return vec3(
@@ -30,9 +31,13 @@ vec3 spherical (float r, float phi, float theta) {
 vec3 sample (float t) {
   float beta = t * PI;
 
-  float r = sin(beta * 2.0) * 0.75;
-  float phi = sin(beta * 8.0 + time);
-  float theta = 4.0 * beta;
+  float r = sin(beta * 8.0);
+  
+  float phi = sin(beta * 16.0 + time) * 2.0;
+
+  phi += 0.2;
+
+  float theta = 10.0 * beta;
 
   return spherical(r, phi, theta) * size;
 }
@@ -62,7 +67,7 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 
 void main() {
   float t = position + 0.5;
-  vec2 volume = vec2(thickness * 0.5, thickness);
+  vec2 volume = vec2(thickness, thickness * 0.5);
   vec3 transformed;
   vec3 objNormal;
   createTube(t, volume, transformed, objNormal);
@@ -71,6 +76,7 @@ void main() {
   vNormal = normalize(normalMatrix * objNormal);
   vUv = uv.yx;
   vViewPosition = -mvPos.xyz;
+  vPosition = position;
 
   gl_Position = projectionMatrix * mvPos;
 }
