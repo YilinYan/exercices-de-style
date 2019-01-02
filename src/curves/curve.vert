@@ -1,3 +1,6 @@
+// Reference:
+// https://github.com/mattdesl/parametric-curves/blob/master/lib/shaders/tube.vert#L35
+
 // attributes of our mesh
 attribute float position;
 attribute float angle;
@@ -22,6 +25,10 @@ varying vec3 vNormal;
 varying float vPosition;
 
 #pragma glslify: ease = require('glsl-easings/exponential-in-out');
+
+float noise(float t) {
+  return abs(sin(t * 135711.7 + 24151.991));
+}
 
 vec3 spherical (float r, float phi, float theta) {
   return vec3(
@@ -91,11 +98,24 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
   // compute position and normal
   normal.xyz = normalize(B * circX + N * circY);
   offset.xyz = current + B * volume.x * circX + N * volume.y * circY;
+
+  offset.xyz = current + (B * volume.x * circX + N * volume.y * circY) 
+  *  noise(t * 710.0);
+
 }
 
+/* pattern 1
+  offset.xyz = current + (B * volume.x * circX + N * volume.y * circY) 
+  * step(0.99, noise(t + index * 4.0));
+*/
+
+/* pattern 2
+  offset.xyz = current + (B * volume.x * circX + N * volume.y * circY) 
+  *  noise(t * 710.0);
+*/
 void main() {
   float t = position + 0.5;
-  vec2 volume = vec2(thickness, thickness * 0.25);
+  vec2 volume = vec2(thickness, thickness * 0.2);
   vec3 transformed;
   vec3 objNormal;
   createTube(t, volume, transformed, objNormal);

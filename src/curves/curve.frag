@@ -1,3 +1,6 @@
+// Reference:
+// https://github.com/mattdesl/parametric-curves/blob/master/lib/shaders/tube.frag#L14
+
 #extension GL_OES_standard_derivatives : enable
 precision highp float;
 
@@ -12,8 +15,17 @@ varying float vPosition;
 
 void main () {
   // handle flat and smooth normals
+  vec3 normal = vNormal;
+  #ifdef FLAT_SHADED
+    normal = faceNormal(vViewPosition);
+  #endif
+  float brightness = normal.y * 0.5 + 0.5;
 
-  float brightness = vNormal.y * 0.5 + 0.5;
+  // add some fake rim lighting
+  vec3 V = normalize(vViewPosition);
+  float vDotN = 1.0 - max(dot(V, normal), 0.0);
+  float rim = smoothstep(0.5, 1.0, vDotN);
+  brightness += rim * 2.0 + pow(rim, 16.0) * 0.5;
 
   float transparent = 1.0 - abs(sin(vPosition * PI * 10.0));
   transparent = pow(transparent, 4.0);

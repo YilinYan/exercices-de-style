@@ -24,7 +24,7 @@ var light = new THREE.AmbientLight( 0x404040 );
 scene.add( light );
 */
 
-const lengthSeg = 500;
+const lengthSeg = 300;
 const curveSides = 10;
 // use the tool to make shaders
 const glslify = require( 'glslify' );
@@ -47,8 +47,8 @@ const baseMaterial = new THREE.RawShaderMaterial({
     thickness: { type: 'f', value: 0.05 },
     time: { type: 'f', value: 0 },
     radialSegments: { type: 'f', value: 8 },
-    size: { type: 'f', value: 4.0 },
-    color: { type: 'c', value: new THREE.Color('#3030f0') },
+    size: { type: 'f', value: 3.0 },
+    color: { type: 'c', value: new THREE.Color('#222262') },
     index: { type: 'f', value: 0 }
   }
 });
@@ -57,14 +57,14 @@ const myRand = (a, b) => { return Math.random() * (b - a) + a; };
 const createCurve = require( './createCurve.js' );
 const geometry = createCurve( curveSides, lengthSeg );
 const meshContainer = new THREE.Object3D();
-const totalMeshes = 20;
+const totalMeshes = 40;
 const meshes = new Array(totalMeshes).fill(null).map((_, i) => {
   const t = totalMeshes <= 1 ? 0 : i / (totalMeshes - 1);
 
   const material = baseMaterial.clone();
   material.uniforms = THREE.UniformsUtils.clone(material.uniforms);
   material.uniforms.index.value = t;
-  material.uniforms.thickness.value = myRand(0.03, 0.04);
+  material.uniforms.thickness.value = myRand(0.02, 0.04);
 
   const mesh = new THREE.Mesh(geometry, material);
   // our geometry only contains a 1-dimensional position attribute 
