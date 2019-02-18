@@ -3,7 +3,13 @@ var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHe
 camera.position.z = 5;
 var renderer = new THREE.WebGLRenderer({ alpha: true, depth: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
+renderer.setClearColor('#000000');
+
+canvas = renderer.domElement;
+canvas.setAttribute('background', '#000000');
+// gl = canvas.getContext('webgl', { premultipliedAlpha: false });
+// gl.blendFunc(gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA);
+document.body.appendChild( canvas );
 
 /*
 var curve = createCurve();
@@ -35,6 +41,9 @@ const baseMaterial = new THREE.RawShaderMaterial({
   vertexShader: vShader,
   fragmentShader: fShader,
   side: THREE.FrontSide,  // what is side ?
+  blendMode: THREE.AdditiveBlending,
+  depthMode: THREE.GreaterDepth,
+  transparent: true,
   extensions: {
     deriviatives: true
   },
@@ -44,10 +53,10 @@ const baseMaterial = new THREE.RawShaderMaterial({
     PI: Math.PI
   },
   uniforms: {
-    thickness: { type: 'f', value: 0.05 },
+    thickness: { type: 'f', value: 0.04 },
     time: { type: 'f', value: 0 },
     radialSegments: { type: 'f', value: 8 },
-    size: { type: 'f', value: 3.0 },
+    size: { type: 'f', value: 4.0 },
     color: { type: 'c', value: new THREE.Color('#222262') },
     index: { type: 'f', value: 0 }
   }
@@ -81,12 +90,13 @@ var timeNow = Date.now();
 function animate() {
   requestAnimationFrame( animate );
   renderer.render( scene, camera );
-//  mesh.material.uniforms.time.value += (Date.now() - timeNow) / 1000.0;
+
   var dt = (Date.now() - timeNow) / 1000.0;
   meshes.forEach((mesh) => {
     mesh.material.uniforms.time.value += dt;
   });
   timeNow = Date.now();
-//  mesh.material.uniforms.thickness.value = Math.sin(Date.now() / 1000.0) * 0.2 + 0.5;
+
+  //  mesh.material.uniforms.thickness.value = Math.sin(Date.now() / 1000.0) * 0.2 + 0.5;
 }
 animate();

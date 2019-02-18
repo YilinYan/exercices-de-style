@@ -23,11 +23,18 @@ varying vec2 vUv;
 varying vec3 vViewPosition;
 varying vec3 vNormal;
 varying float vPosition;
+varying vec3 vVertPos;
+varying float vIndex;
+varying float vTime;
 
 #pragma glslify: ease = require('glsl-easings/exponential-in-out');
 
 float noise(float t) {
-  return abs(sin(t * 135711.7 + 24151.991));
+  return fract(abs(sin(t * 135711.7 + 24151.991)));
+}
+
+float noise(float a, float b) {
+  return fract(abs(sin(a * 12325.13 + 86762.39) + cos(b * 12245.93 + 12248.97)));
 }
 
 vec3 spherical (float r, float phi, float theta) {
@@ -42,14 +49,17 @@ vec3 sample (float t) {
   float beta = t * PI;
   
   float ripple = ease(sin(t * 2.0 * PI + time) * 0.5 + 0.5) * 0.5;
-  float noise = time + index * ripple * 8.0;
+  // increase delay of each circle
+  float noise = time / 128. + index * ripple * 16.0;
   
   // animate radius on click
   float animateRadius = size;
   float animateStrength = 1.0;
   float radiusAnimation = animateRadius * animateStrength * 0.25;
-  float r = sin(index * 0.75 + beta * 2.0) * (0.75 + radiusAnimation);
-  float theta = 4.0 * beta + index * 0.25;
+  float r = sin(index * 1.0 + beta * 2.0) * (0.75 + radiusAnimation);
+  // increase anim radius
+  r *= r;
+  float theta = 4.0 * beta + index * 4.0 + time / 16.;
   float phi = sin(index * 2.0 + beta * 8.0 + noise);
 
   return spherical(r, phi, theta);
@@ -99,9 +109,7 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
   normal.xyz = normalize(B * circX + N * circY);
   offset.xyz = current + B * volume.x * circX + N * volume.y * circY;
 
-  offset.xyz = current + (B * volume.x * circX + N * volume.y * circY) 
-  *  noise(t * 710.0);
-
+  // if(noise(t * 0.01, index / 40.0 * 0.01) > 0.3) offset.xyz = current;
 }
 
 /* pattern 1
@@ -125,6 +133,9 @@ void main() {
   vUv = uv.yx;
   vViewPosition = -mvPos.xyz;
   vPosition = position;
+  vVertPos = mvPos.xyz;
+  vIndex = index;
+  vTime = time;
 
   gl_Position = projectionMatrix * mvPos;
 }

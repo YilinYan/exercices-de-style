@@ -7,31 +7,50 @@ precision highp float;
 uniform vec3 color;
 
 varying vec3 vNormal;
-varying vec2 vUv;
+varying vec2 vUv; 
 varying vec3 vViewPosition;
 varying float vPosition;
+varying vec3 vVertPos;
+varying float vIndex;
+varying float vTime;
 
 #pragma glslify: faceNormal = require('glsl-face-normal');
 
 void main () {
   // handle flat and smooth normals
   vec3 normal = vNormal;
-  #ifdef FLAT_SHADED
-    normal = faceNormal(vViewPosition);
-  #endif
-  float brightness = normal.y * 0.5 + 0.5;
+  // #ifdef FLAT_SHADED
+  //   normal = faceNormal(vViewPosition);
+  // #endif
+  vec3 scol = vec3(0.3, 0.3, 0.5);
+  vec3 lightDirec = normalize(vec3(10.0, -2.0, 6.0));
+  float diffuse = clamp(dot(lightDirec, normal), 0.0, 1.0);
+  float ambient = dot(lightDirec, normal) * 0.5 + 0.5;
+
+  vec3 col = vec3(0.0);
+  col += diffuse * vec3(0.1, 0.1, 1.0) * scol;
+  col += ambient * vec3(0.3, 0.1, 0.1) * scol;
 
   // add some fake rim lighting
-  vec3 V = normalize(vViewPosition);
-  float vDotN = 1.0 - max(dot(V, normal), 0.0);
-  float rim = smoothstep(0.5, 1.0, vDotN);
-  brightness += rim * 2.0 + pow(rim, 16.0) * 0.5;
+  vec3 view = normalize(vViewPosition);
+  vec3 ref = normalize(2.0 * normal - lightDirec);
+  float specular = clamp(dot(view, ref), 0.0, 1.0);
+  col += pow(specular, 4.0) * diffuse * vec3(0.1, 0.1, 1.0);
+  col += pow(specular, 12.0) * vec3(0.1, 0.1, 1.0);
 
-  float transparent = 1.0 - abs(sin(vPosition * PI * 10.0));
-  transparent = pow(transparent, 4.0);
+  // back light
+  float diffuse2 = clamp(dot(-lightDirec, normal), 0.0, 1.0);
+  col += diffuse2 * vec3(0.7, 0.1, 0.1) * scol;
 
-  float highlight = 1.0 - abs(sin(vPosition * PI * 5.0));
-  highlight = pow(highlight, 4.0);
+  // tone map
+  col = col / (vec3(1.0) + col);
+  col = pow(col, vec3(0.7)) * 1.3;
 
-  gl_FragColor = vec4(brightness * color, 1.0);
+  // alpha
+  float alpha = clamp(length(vVertPos) * 0.05, 0.0, 1.0) * (
+    sqrt(ambient) + pow(specular, 4.0) * diffuse);
+  // cut into segments
+  alpha *= sign(fract((vPosition + 0.5) * 12.0 + vIndex / 40. * 2.0 + vTime / 4.) - 0.5);
+
+  gl_FragColor = vec4(col, alpha);
 }
