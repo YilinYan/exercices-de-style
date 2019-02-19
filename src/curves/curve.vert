@@ -33,8 +33,18 @@ float noise(float t) {
   return fract(abs(sin(t * 135711.7 + 24151.991)));
 }
 
-float noise(float a, float b) {
-  return fract(abs(sin(a * 12325.13 + 86762.39) + cos(b * 12245.93 + 12248.97)));
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(12325.13, 12245.93))) * 86762.39);
+}
+
+float noise(vec2 p) {
+  vec2 w = fract(p);
+  w = w * w * (3.0 - 2.0 * w);
+  p = floor(p);
+  return mix(
+    mix(hash(p + vec2(0.0, 0.0)), hash(p + vec2(1.0, 0.0)), w.x),
+    mix(hash(p + vec2(0.0, 1.0)), hash(p + vec2(1.0, 1.0)), w.x), 
+    w.y);
 }
 
 vec3 spherical (float r, float phi, float theta) {
@@ -48,17 +58,17 @@ vec3 spherical (float r, float phi, float theta) {
 vec3 sample (float t) {
   float beta = t * PI;
   
-  float ripple = ease(sin(t * 2.0 * PI + time) * 0.5 + 0.5) * 0.5;
+  float ripple = ease(sin(t * 2.0 * PI + time / 2.) * 0.5 + 0.5) * 0.5;
   // increase delay of each circle
   float noise = time / 128. + index * ripple * 16.0;
   
   // animate radius on click
   float animateRadius = size;
-  float animateStrength = 1.0;
+  float animateStrength = 1.5;
   float radiusAnimation = animateRadius * animateStrength * 0.25;
   float r = sin(index * 1.0 + beta * 2.0) * (0.75 + radiusAnimation);
   // increase anim radius
-  r *= r;
+  //r *= r;
   float theta = 4.0 * beta + index * 4.0 + time / 16.;
   float phi = sin(index * 2.0 + beta * 8.0 + noise);
 
@@ -107,7 +117,9 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 
   // compute position and normal
   normal.xyz = normalize(B * circX + N * circY);
-  offset.xyz = current + B * volume.x * circX + N * volume.y * circY;
+  // increase tube radius when getting wider
+  offset.xyz = current + 
+  (B * volume.x * circX + N * volume.y * circY) * pow((length(current) + 1.0), 0.3);
 
   // if(noise(t * 0.01, index / 40.0 * 0.01) > 0.3) offset.xyz = current;
 }
@@ -123,7 +135,9 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 */
 void main() {
   float t = position + 0.5;
-  vec2 volume = vec2(thickness, thickness * 0.2);
+  vec2 volume = vec2(thickness * 
+  (0.5*noise(vec2(index/float(TOTAL_MESHES), t)) + 0.5), thickness * 0.2);
+  // vec2 volume = vec2(thickness, thickness * 0.2);
   vec3 transformed;
   vec3 objNormal;
   createTube(t, volume, transformed, objNormal);
@@ -132,7 +146,7 @@ void main() {
   vNormal = normalize(normalMatrix * objNormal);
   vUv = uv.yx;
   vViewPosition = -mvPos.xyz;
-  vPosition = position;
+  vPosition = position + 0.5;
   vVertPos = mvPos.xyz;
   vIndex = index;
   vTime = time;

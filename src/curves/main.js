@@ -50,7 +50,8 @@ const baseMaterial = new THREE.RawShaderMaterial({
   defines: {
     lengthSegments: lengthSeg,  // subdivs
     FLAT_SHADED: false,
-    PI: Math.PI
+    PI: Math.PI,
+    TOTAL_MESHES: 128.0,
   },
   uniforms: {
     thickness: { type: 'f', value: 0.04 },
@@ -66,7 +67,7 @@ const myRand = (a, b) => { return Math.random() * (b - a) + a; };
 const createCurve = require( './createCurve.js' );
 const geometry = createCurve( curveSides, lengthSeg );
 const meshContainer = new THREE.Object3D();
-const totalMeshes = 40;
+const totalMeshes = 128.0;
 const meshes = new Array(totalMeshes).fill(null).map((_, i) => {
   const t = totalMeshes <= 1 ? 0 : i / (totalMeshes - 1);
 
@@ -79,7 +80,7 @@ const meshes = new Array(totalMeshes).fill(null).map((_, i) => {
   // our geometry only contains a 1-dimensional position attribute 
   // which causes issues with ThreeJS’s built-in frustum culling.
   // https://mattdesl.svbtle.com/shaping-curves-with-parametric-equations
-  mesh.frustumCulled = false;
+  //mesh.frustumCulled = false;
 
   meshContainer.add(mesh);
   return mesh;
