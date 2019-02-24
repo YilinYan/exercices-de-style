@@ -33,10 +33,9 @@ float noise(vec2 p) {
 
 void main () {
   vec3 normal = vNormal;
-  vec3 lightDirec = normalize(vec3(-0.0, 1.0, -1.0) - vVertPos);
-  // vec3 lightDirec = normalize(cameraPos - vVertPos);
+  vec3 lightDirec = normalize(vec3(1.0, 1.0, -1.0) - vVertPos);
   float diffuse = clamp(dot(lightDirec, normal), 0.0, 1.0);
-  diffuse = pow(diffuse, 0.2);
+  diffuse = pow(diffuse, 1.5);
   float ambient = dot(lightDirec, normal) * 0.5 + 0.5;
 
   vec3 col = vec3(0.0);
@@ -44,28 +43,31 @@ void main () {
   col += ambient * vec3(0.4, 0.1, 0.1) * sscolor;
 
   // add some fake rim lighting
-  vec3 view = normalize(cameraPos - vVertPos);
+  vec3 view = normalize(vViewPosition);
   vec3 ref = normalize(2.0 * normal - lightDirec);
   float specular = clamp(dot(view, ref), 0.0, 1.0);
   col += pow(specular, 4.0) * diffuse * vec3(0.1, 0.1, 1.0);
   col += pow(specular, 12.0) * vec3(0.1, 0.1, 1.0);
 
   // back light
-  // float diffuse2 = clamp(dot(-lightDirec, normal), 0.0, 1.0);
-  // diffuse2 = pow(diffuse2, 4.0);
-  // col += diffuse2 * vec3(0.3, 0.1, 0.1) * sscolor;
+  float diffuse2 = clamp(dot(-lightDirec, normal), 0.0, 1.0);
+  diffuse2 = pow(diffuse2, 4.0);
+  col += diffuse2 * vec3(0.2, 0.1, 0.1) * sscolor;
 
   // tone map
   col = col / (vec3(1.0) + col);
   col = pow(col, vec3(0.7)) * 1.5;
 
   // alpha
-  // float alpha = clamp(length(vVertPos) * 0.05, 0.0, 1.0) * (
-  //   sqrt(ambient) + pow(specular, 4.0) * diffuse);
-  // cut into segments
-  // alpha *= sign(fract((vPosition + 0.5) * 12.0 + vIndex / 40. * 2.0 + vTime / 4.) - 0.5);
-  // alpha *= pow(noise(8.0*vec2(vPosition, 1024.0*vIndex/float(TOTAL_MESHES))), 3.0);
-  float alpha = pow(1.0 - clamp(dot(view, normal), 0.0, 1.0), 1.8);
-  if(length(vVertPos.z) < 0.4) alpha *= vVertPos.z * 2.5;
+  float alpha = pow(1.0 - clamp(dot(view, normal), 0.0, 1.0), 2.0);
+  if(int(vIndex) == int(vIndex) / 32 * 32) {
+    col = pow(col, vec3(0.9, 0.6, 0.4));
+    alpha *= vVertPos.x * 2.;
+    alpha = alpha / 4.;
+  }
+  else {
+    if(length(vVertPos.z) < 0.4) alpha *= vVertPos.z * 2.5;
+    if(length(vVertPos.x) < 0.2) alpha *= vVertPos.x * 5.0;
+  }
   gl_FragColor = vec4(col, alpha);
 }

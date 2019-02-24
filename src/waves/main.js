@@ -1,7 +1,7 @@
 const height = 900;
 const scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / height, 0.1, 1000 );
-const cameraPos = [1.0, 0.3, 1.0];
+var camera = new THREE.PerspectiveCamera( 50, window.innerWidth / height, 0.01, 1000 );
+var cameraPos = [1.0, 0.3, 1.0];
 camera.position.x = cameraPos[0];
 camera.position.y = cameraPos[1];
 camera.position.z = cameraPos[2];
@@ -63,6 +63,53 @@ const meshes = new Array(totalMeshes).fill(null).map((_, i) => {
   return mesh;
 });
 scene.add(meshContainer);
+
+// var circleGeometry = new THREE.CircleGeometry( 0.5, 128 );
+// var material = new THREE.MeshBasicMaterial( { color: 0xbbccdd } );
+// var circle = new THREE.Mesh( circleGeometry, material );
+// circle.translateOnAxis( new THREE.Vector3(-1.0, 0, -0.6), 1 );
+// circle.rotateY(Math.PI / 4);
+// scene.add( circle );
+// var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+// scene.add( light );
+
+// var fog = new THREE.Fog('#ffffff', 0.1, 2);
+// scene.fog = fog;
+
+// var lineNum = 30;
+// for(var i = 0; i < lineNum; ++i) 
+//   for(var j = 0; j < lineNum; ++j) {
+//     const planeMaterial = new THREE.RawShaderMaterial({
+//       fragmentShader: fShader,
+//       side: THREE.FrontSide,
+//       transparent: true,
+//       extensions: {
+//         deriviatives: true
+//       },
+//       defines: {
+//         PI: Math.PI,
+//         TOTAL_SEGMENTS: lengthSeg,
+//         TOTAL_MESHES: totalMeshes,
+//       },
+//       uniforms: {
+//         thickness: { type: 'f', value: 0.01 },
+//         time: { type: 'f', value: 0 },
+//         size: { type: 'f', value: 4.0 },
+//         sscolor: { type: 'c', value: new THREE.Color('#222242') },
+//         index: { type: 'f', value: 0 },
+//         cameraPos: { type: 'vec3', value: new THREE.Vector3(cameraPos[0], cameraPos[1], cameraPos[2]) },
+//       }
+//     });
+//     var length = myRand(0.05, 0.08);
+//     var posy = myRand(0.1, 1.0);
+//     var planeGeometry = new THREE.PlaneGeometry( 0.001, length, 32 );
+//     var material = new THREE.MeshBasicMaterial( {color: 0xddeeff, side: THREE.FrontSide} );
+//     var plane = new THREE.Mesh( planeGeometry, material );
+//     var angle = (i / lineNum) * Math.PI;
+//     plane.translateOnAxis( new THREE.Vector3(i / lineNum, posy, j / lineNum), 1 );
+//     scene.add( plane );
+// }
+
 
 // animate
 var timeNow = Date.now();

@@ -62,27 +62,27 @@ void noised(vec2 x, out float value, out vec3 derivative) {
     float k3 =  - a + c;
     float k4 =  a - b - c + d;
 
-    // value = k0 + k1 * u.x + k3 * u.y + k2 * u.x * u.y;
-    value = noise(x);
+    value = k0 + k1 * u.x + k3 * u.y + k2 * u.x * u.y;
     vec2 deri = du * vec2(k1 + k2 * u.y, k3 + k4 * u.x);
     derivative =  normalize(vec3(deri.x, noise(x + deri) - value, deri.y));
-    // derivative =  normalize(vec3(deri.x, 1.0, deri.y));
 }
 
 void sample (float t, out vec3 samplePos, out vec3 derivative) {
   float value;
   vec3 deri;
-  vec2 hashPos = vec2(-time/4., time/16.) + 8.0 * vec2(t, index / float(TOTAL_MESHES)).yx;
+  vec2 posxy = vec2(index / float(TOTAL_MESHES), t);
+  vec2 postime = vec2(-time/4., time/16.);
+  vec2 hashPos = postime + 8.0 * posxy;
+  float heightOffset = 0.0;
+  if(int(index) == int(index) / 32 * 32) {
+    postime *= -1.0;
+    posxy = posxy.yx;
+    hashPos = postime + 4.0 * posxy;
+    heightOffset = 0.3;
+  }
   noised(hashPos, value, deri);
-  // samplePos = vec3(t, 0.14 * value, index / float(TOTAL_MESHES));
-  samplePos = vec3(index / float(TOTAL_MESHES), 0.14 * value, t);
+  samplePos = vec3(posxy.x, 0.15 * pow(value, 0.7) + heightOffset, posxy.y);
   derivative = deri;
-
-  // samplePos = vec3(t, 0.14 * noise(vec2(-time/4.) + 8.0 * vec2(t, index / float(TOTAL_MESHES))), index / float(TOTAL_MESHES));
-
-  // vec3 ret = vec3(t, 0.14 * noise(vec2(-time/4.) + 8.0 * vec2(t, index / float(TOTAL_MESHES))), index / float(TOTAL_MESHES));
-  // if(int(index) > int(index) / 2 * 2) return ret.xyz;
-  // return vec3(ret.z, 0.14 * noise(vec2(-time/4.) + 8.0 * vec2(ret.z, ret.x)), ret.x);;
 }
 
 void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
@@ -94,9 +94,6 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 
   // compute the TBN matrix
   vec3 T = normalize(next - current);
-  // vec3 T = currentDeri;
-  // vec3 B = normalize(cross(T, next + current));
-  // vec3 B = normalize(cross(T, currentDeri));
   vec3 B = normalize(vec3(0, 1, 0));
   vec3 N = -normalize(cross(B, T));
 
@@ -111,7 +108,10 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 }
 
 void main() {
-  vec2 volume = vec2(thickness * 8.0, thickness * 0.5);
+  vec2 volume = vec2(thickness * 16.0, thickness * 0.5);
+  if(int(index) == int(index) / 32 * 32) {
+    volume.x = pow(volume.x, 0.5 * index / float(TOTAL_MESHES) + 0.5);
+  }
   vec3 transformed;
   vec3 objNormal;
 
@@ -119,7 +119,7 @@ void main() {
   vec4 mvPos = modelViewMatrix * vec4(transformed, 1.0);
   vNormal = normalize(normalMatrix * objNormal);
   vUv = uv.yx;
-  vViewPosition = -mvPos.xyz;  // ??????
+  vViewPosition = -mvPos.xyz;
   vPosition = position;
   vVertPos = transformed;
   vIndex = index;
