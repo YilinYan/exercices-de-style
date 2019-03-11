@@ -42,6 +42,7 @@ const baseMaterial = new THREE.RawShaderMaterial({
     sscolor: { type: 'c', value: new THREE.Color('#222242') },
     index: { type: 'f', value: 0 },
     cameraPos: { type: 'vec3', value: new THREE.Vector3(cameraPos[0], cameraPos[1], cameraPos[2]) },
+    posBias: { type: 'vec3', value: new THREE.Vector3() },
   }
 });
 
@@ -55,7 +56,8 @@ const meshes = new Array(totalMeshes).fill(null).map((_, i) => {
   material.uniforms = THREE.UniformsUtils.clone(material.uniforms);
   material.uniforms.index.value = i;
   material.uniforms.thickness.value = myRand(0.0018, 0.002);  // random thickness
-
+  material.uniforms.posBias.value = new THREE.Vector3( i/10.0 - Math.floor(i/10.0), 0.0, 
+                                                        Math.floor(i/10.0)/10.0 );
   const mesh = new THREE.Mesh(geometry, material);
   // mesh.frustumCulled = false;
   meshContainer.add(mesh);
@@ -64,6 +66,10 @@ const meshes = new Array(totalMeshes).fill(null).map((_, i) => {
 scene.add(meshContainer);
 
 // animate
+var SimplexNoise = require('simplex-noise'),
+    ysimplex = new SimplexNoise('seed y'),
+    xsimplex = new SimplexNoise('hhhh'),
+    zsimplex = new SimplexNoise('egagaw');
 var timeNow = Date.now();
 function animate() {
   requestAnimationFrame( animate );
@@ -71,8 +77,14 @@ function animate() {
 
   var dt = (Date.now() - timeNow) / 1000.0;
   timeNow = Date.now();
-  meshes.forEach((mesh) => {
+  meshes.forEach((mesh, i) => {
     mesh.material.uniforms.time.value += dt;
+    posBias = mesh.material.uniforms.posBias.value;
+    newBias = posBias.clone();
+    newBias.x += (xsimplex.noise3D(posBias.x, posBias.y, posBias.z) - 0.2) / 100.;
+    newBias.y += (ysimplex.noise3D(posBias.x, posBias.y, posBias.z) - 0.2) / 100.;
+    newBias.z += (zsimplex.noise3D(posBias.x, posBias.y, posBias.z) - 0.2) / 100.;
+    mesh.material.uniforms.posBias.value = newBias;
   });
 }
 animate();

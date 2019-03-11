@@ -16,6 +16,7 @@ uniform float thickness;
 uniform float time;
 uniform float size;
 uniform float index;
+uniform vec3 posBias;
 
 // pass a few things along to the vertex shader
 varying vec2  vUv;
@@ -26,7 +27,8 @@ varying vec3  vVertPos;
 varying float vIndex;
 varying float vTime;
 
-#pragma glslify: snoise2 = require(glsl-noise/simplex/2d)
+#pragma glslify: snoise2 = require('glsl-noise/simplex/2d');
+#pragma glslify: ease = require('glsl-easings/exponential-in-out');
 
 float noise(float t) {
   return fract(sin(t * 31.7 + 24151.991));
@@ -75,8 +77,15 @@ void sample (float t, out vec3 samplePos, out vec3 derivative) {
   vec2 resolution = vec2(10, 10);
   vec2 bias = vec2( index / resolution.x - floor(index / resolution.x), 
                     floor(index / resolution.x) / resolution.y);
-  vec2 posxy = vec2( bias.x, t/32. + bias.y );
-  samplePos = vec3(posxy.x, 0.0, posxy.y);
+  // vec2 posxy = vec2( bias.x, t/32. + bias.y );
+  vec2 posxy = vec2( 0., t/32. );
+  // posxy.x += snoise2(bias) / 8. * clamp(time, 0., 3.0);
+  // posxy.y += snoise2(-bias) / 8. * clamp(time, 0., 3.0);
+
+  // float localt = clamp(time, 0., 100.0) / 10.;
+  // posxy.x += snoise2(bias + vec2(localt, localt)) / 8.;
+  // posxy.y += snoise2(-bias - vec2(localt, localt)) / 8.;
+  samplePos = vec3(posxy.x, 0.0, posxy.y) + posBias;
 }
 
 void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
