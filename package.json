@@ -14,12 +14,13 @@
     "url": "https://github.com/yilinyan"
   },
   "dependencies": {
+    "glsl-easings": "^1.0.0",
     "glsl-face-normal": "^1.0.2",
+    "glsl-noise": "^0.0.0",
     "glslify": "^2.0.0",
-    "simplex-noise": "^2.2.0",
     "glslify-hex": "^2.1.1",
-    "static-eval": ">=2.0.0",
-    "glsl-easings": "^1.0.0"
+    "simplex-noise": "^2.2.0",
+    "static-eval": "^2.0.2"
   },
   "repository": {
     "type": "git",
