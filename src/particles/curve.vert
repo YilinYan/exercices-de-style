@@ -17,6 +17,7 @@ uniform float time;
 uniform float size;
 uniform float index;
 uniform vec3 posBias;
+uniform vec3 posDire;
 
 // pass a few things along to the vertex shader
 varying vec2  vUv;
@@ -74,18 +75,8 @@ void noised(vec2 x, out float value, out vec3 derivative) {
 void sample (float t, out vec3 samplePos, out vec3 derivative) {
   float value;
   vec3 deri;
-  vec2 resolution = vec2(10, 10);
-  vec2 bias = vec2( index / resolution.x - floor(index / resolution.x), 
-                    floor(index / resolution.x) / resolution.y);
-  // vec2 posxy = vec2( bias.x, t/32. + bias.y );
-  vec2 posxy = vec2( 0., t/32. );
-  // posxy.x += snoise2(bias) / 8. * clamp(time, 0., 3.0);
-  // posxy.y += snoise2(-bias) / 8. * clamp(time, 0., 3.0);
-
-  // float localt = clamp(time, 0., 100.0) / 10.;
-  // posxy.x += snoise2(bias + vec2(localt, localt)) / 8.;
-  // posxy.y += snoise2(-bias - vec2(localt, localt)) / 8.;
-  samplePos = vec3(posxy.x, 0.0, posxy.y) + posBias;
+  vec3 posxy = t/16. * posDire;
+  samplePos = posxy + posBias;
 }
 
 void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
@@ -111,7 +102,7 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 }
 
 void main() {
-  vec2 volume = vec2(thickness * 1.0, thickness * 4.0);
+  vec2 volume = vec2(thickness * 3.0, thickness * 4.0);
   vec3 transformed;
   vec3 objNormal;
 

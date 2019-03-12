@@ -60,14 +60,5 @@ void main () {
 
   // alpha
   float alpha = pow(1.0 - clamp(dot(view, normal), 0.0, 1.0), 2.0);
-  // if(int(vIndex) == int(vIndex) / 32 * 32) {
-  //   col = pow(col, vec3(0.9, 0.6, 0.4));
-  //   alpha *= vVertPos.x * 2.;
-  //   alpha = alpha / 4.;
-  // }
-  // else {
-  //   if(length(vVertPos.z) < 0.4) alpha *= vVertPos.z * 2.5;
-  //   if(length(vVertPos.x) < 0.2) alpha *= vVertPos.x * 5.0;
-  // }
   gl_FragColor = vec4(col, 1.0);
 }

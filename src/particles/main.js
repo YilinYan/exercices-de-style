@@ -4,7 +4,7 @@ var cameraPos = [1.0, 1.0, 1.0];
 camera.position.x = cameraPos[0];
 camera.position.y = cameraPos[1];
 camera.position.z = cameraPos[2];
-camera.lookAt(new THREE.Vector3(0.5, 0.0, 0.5));
+camera.lookAt(new THREE.Vector3(0.5, 0.5, 0.5));
 var renderer = new THREE.WebGLRenderer({ alpha: true, depth: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setClearColor('#000000');
@@ -16,12 +16,12 @@ document.getElementById ("canvas").appendChild(canvas)
 // });
 
 // create material
-const lengthSeg = 200;
-const curveSides = 10;
+const lengthSeg = 4;
+const curveSides = 6;
 const glslify = require( 'glslify' );
 const vShader = glslify( './curve.vert' );
 const fShader = glslify( './curve.frag' );
-const totalMeshes = 100;
+const totalMeshes = 5000;
 const baseMaterial = new THREE.RawShaderMaterial({
   vertexShader: vShader,
   fragmentShader: fShader,
@@ -43,6 +43,7 @@ const baseMaterial = new THREE.RawShaderMaterial({
     index: { type: 'f', value: 0 },
     cameraPos: { type: 'vec3', value: new THREE.Vector3(cameraPos[0], cameraPos[1], cameraPos[2]) },
     posBias: { type: 'vec3', value: new THREE.Vector3() },
+    posDire: { type: 'vec3', value: new THREE.Vector3() },
   }
 });
 
@@ -56,8 +57,13 @@ const meshes = new Array(totalMeshes).fill(null).map((_, i) => {
   material.uniforms = THREE.UniformsUtils.clone(material.uniforms);
   material.uniforms.index.value = i;
   material.uniforms.thickness.value = myRand(0.0018, 0.002);  // random thickness
-  material.uniforms.posBias.value = new THREE.Vector3( i/10.0 - Math.floor(i/10.0), 0.0, 
-                                                        Math.floor(i/10.0)/10.0 );
+
+  var resolution = Math.pow(totalMeshes, 0.33) + 1;
+  var idx = Math.floor(i/(resolution*resolution));
+  var idy = Math.floor( (i % (resolution*resolution)) / resolution );
+  var idz = (i % (resolution*resolution)) % resolution;
+  material.uniforms.posBias.value = new THREE.Vector3( idx / resolution, idy / resolution, idz / resolution ).multiplyScalar(0.5);
+  material.uniforms.posDire.value = new THREE.Vector3();
   const mesh = new THREE.Mesh(geometry, material);
   // mesh.frustumCulled = false;
   meshContainer.add(mesh);
@@ -67,10 +73,11 @@ scene.add(meshContainer);
 
 // animate
 var SimplexNoise = require('simplex-noise'),
-    ysimplex = new SimplexNoise('seed y'),
-    xsimplex = new SimplexNoise('hhhh'),
-    zsimplex = new SimplexNoise('egagaw');
+    ysimplex = new SimplexNoise('sgamsaakk'),
+    xsimplex = new SimplexNoise('hhdssgsg'),
+    zsimplex = new SimplexNoise('egagdaaw');
 var timeNow = Date.now();
+var scalar = 0;
 function animate() {
   requestAnimationFrame( animate );
   renderer.render( scene, camera );
@@ -79,11 +86,17 @@ function animate() {
   timeNow = Date.now();
   meshes.forEach((mesh, i) => {
     mesh.material.uniforms.time.value += dt;
+    posDire = mesh.material.uniforms.posDire.value;
     posBias = mesh.material.uniforms.posBias.value;
     newBias = posBias.clone();
-    newBias.x += (xsimplex.noise3D(posBias.x, posBias.y, posBias.z) - 0.2) / 100.;
-    newBias.y += (ysimplex.noise3D(posBias.x, posBias.y, posBias.z) - 0.2) / 100.;
-    newBias.z += (zsimplex.noise3D(posBias.x, posBias.y, posBias.z) - 0.2) / 100.;
+
+    scalar += dt;
+    scalar = Math.min(scalar, 10.0);
+    posBias.multiplyScalar(1.5 * (1.0 + scalar / 5000.));
+    posDire.x = xsimplex.noise3D(posBias.x, posBias.y, posBias.z);
+    posDire.y = ysimplex.noise3D(posBias.x, posBias.y, posBias.z);
+    posDire.z = zsimplex.noise3D(posBias.x, posBias.y, posBias.z);
+    newBias.addScaledVector(posDire, 0.01); 
     mesh.material.uniforms.posBias.value = newBias;
   });
 }
